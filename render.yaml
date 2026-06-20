@@ -1,17 +1,21 @@
 services:
   - type: web
-    name: medipredict
+    name: medipredict-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+
+  - type: web
+    name: medipredict-backend
     runtime: python
-    plan: free
-    buildCommand: >
-      cd frontend &&
-      npm install &&
-      npm run build &&
-      cd ../backend &&
-      rm -rf frontend_dist &&
-      cp -r ../frontend/dist frontend_dist &&
-      pip install -r requirements.txt
-    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
