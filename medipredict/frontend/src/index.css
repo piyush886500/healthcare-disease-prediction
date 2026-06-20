@@ -1,0 +1,672 @@
+/* =========================================================================
+   MediPredict — design tokens
+   Direction: "patient chart" — a calm clinical record rather than a generic
+   dashboard. Tabs read like chart dividers, the pulse-line motif is the one
+   signature element, and monospace numerals carry the data (vitals,
+   confidence, model stats) so they read distinctly from prose.
+   ========================================================================= */
+:root {
+  --bg: #F3F7F5;
+  --surface: #FFFFFF;
+  --surface-raised: #FCFDFD;
+  --ink: #122436;
+  --ink-soft: #51687A;
+  --ink-faint: #8DA0AC;
+
+  --accent: #1F7A6C;
+  --accent-ink: #0F4E45;
+  --accent-soft: #DDEFE9;
+  --accent-line: #B7DAD0;
+
+  --alert: #B33F2B;
+  --alert-soft: #FBE6E0;
+  --alert-line: #EBB7A7;
+
+  --line: #DCE5E1;
+  --line-strong: #BCCAC4;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --radius: 10px;
+  --shadow-card: 0 1px 2px rgba(18, 36, 54, 0.04), 0 8px 24px rgba(18, 36, 54, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px);
+  background-size: 100% 32px;
+  background-attachment: local;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--accent-ink);
+}
+
+button {
+  font-family: var(--font-body);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Auth screens                                                            */
+/* ---------------------------------------------------------------------- */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 40px 36px;
+}
+
+.auth-card .brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.auth-card .brand-mark {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.auth-card h1 {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.auth-card .subtitle {
+  color: var(--ink-soft);
+  font-size: 14px;
+  margin-top: 6px;
+  margin-bottom: 28px;
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.field input, .field select {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  font-size: 15px;
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+.field input:focus, .field select:focus, button:focus-visible, .chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--accent-ink);
+}
+
+.btn-primary:disabled {
+  background: var(--ink-faint);
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.form-error {
+  background: var(--alert-soft);
+  border: 1px solid var(--alert-line);
+  color: var(--alert);
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 18px;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.auth-switch a {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Chart shell (the post-login app frame)                                  */
+/* ---------------------------------------------------------------------- */
+.chart-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 6px;
+}
+
+.chart-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.chart-title .brand-mark {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.chart-title h1 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.chart-user {
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+.chart-user .logout-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--alert);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* chart tabs = primary nav, styled like folder dividers */
+.chart-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 20px 0 28px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.chart-tab {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.chart-tab.active {
+  color: var(--accent-ink);
+  border-bottom-color: var(--accent);
+}
+
+/* the signature pulse-line divider */
+.pulse-divider {
+  width: 100%;
+  height: 28px;
+  margin: 4px 0 24px;
+  overflow: hidden;
+}
+
+.pulse-divider svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.pulse-divider path {
+  stroke: var(--accent-line);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.pulse-divider .pulse-dot {
+  fill: var(--accent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Cards / panels                                                          */
+/* ---------------------------------------------------------------------- */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+}
+
+.panel + .panel {
+  margin-top: 20px;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 16px;
+}
+
+.checker-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .checker-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.symptom-search input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 14px;
+  font-family: var(--font-body);
+}
+
+.symptom-list {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.chip {
+  border: 1px solid var(--line-strong);
+  background: var(--surface-raised);
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 12.5px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.1s ease;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.chip.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.selected-rail {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--line-strong);
+}
+
+.selected-rail .count {
+  font-family: var(--font-mono);
+  color: var(--accent-ink);
+}
+
+.empty-note {
+  color: var(--ink-faint);
+  font-size: 13px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Result panel                                                            */
+/* ---------------------------------------------------------------------- */
+.emergency-banner {
+  background: var(--alert-soft);
+  border: 1px solid var(--alert-line);
+  color: var(--alert);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.result-disease {
+  font-size: 24px;
+  font-weight: 600;
+  font-family: var(--font-display);
+}
+
+.result-meta {
+  display: flex;
+  gap: 22px;
+  margin: 12px 0 18px;
+}
+
+.result-meta .stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  margin-bottom: 2px;
+}
+
+.result-meta .stat-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.confidence-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.confidence-bar-fill {
+  height: 100%;
+  background: var(--accent);
+}
+
+.top3-list {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+}
+
+.top3-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+}
+
+.top3-list li .score {
+  font-family: var(--font-mono);
+  color: var(--ink-soft);
+}
+
+.result-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+  margin: 18px 0 8px;
+}
+
+.result-description {
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.precaution-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+
+.precaution-list li {
+  margin-bottom: 5px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* History / Stats                                                         */
+/* ---------------------------------------------------------------------- */
+.history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.history-row:last-child {
+  border-bottom: none;
+}
+
+.history-disease {
+  font-weight: 600;
+}
+
+.history-symptoms {
+  color: var(--ink-faint);
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+.history-confidence {
+  font-family: var(--font-mono);
+  color: var(--accent-ink);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 700px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+
+.stat-card .big {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  color: var(--accent-ink);
+}
+
+.stat-card .label {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 50px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.bar-track {
+  height: 8px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--accent);
+}
+
+.bar-value {
+  font-family: var(--font-mono);
+  text-align: right;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+
+.page-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: var(--ink-soft);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--ink-faint);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Dashboard feature cards                                                 */
+/* ---------------------------------------------------------------------- */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 700px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.feature-card {
+  display: block;
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 22px 24px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color 0.12s ease, transform 0.12s ease;
+}
+
+.feature-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.feature-card-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.feature-card-desc {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  padding-right: 20px;
+}
+
+.feature-card-arrow {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  color: var(--accent);
+  font-size: 16px;
+}

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: medipredict
+    runtime: python
+    plan: free
+    buildCommand: >
+      cd frontend &&
+      npm install &&
+      npm run build &&
+      cd ../backend &&
+      rm -rf frontend_dist &&
+      cp -r ../frontend/dist frontend_dist &&
+      pip install -r requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
