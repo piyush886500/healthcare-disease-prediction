@@ -115,8 +115,8 @@ def login(payload: LoginRequest, response: Response):
             key=COOKIE_NAME,
             value=token,
             httponly=True,
-            samesite="lax",
-            secure=IS_PROD,  # set True when serving over HTTPS in production
+            samesite="none" if IS_PROD else "lax",
+            secure=IS_PROD,
             max_age=SESSION_HOURS * 3600,
             path="/",
         )
@@ -127,7 +127,12 @@ def login(payload: LoginRequest, response: Response):
 
 @app.post("/api/logout")
 def logout(response: Response):
-    response.delete_cookie(COOKIE_NAME, path="/")
+    response.delete_cookie(
+        COOKIE_NAME,
+        path="/",
+        samesite="none" if IS_PROD else "lax",
+        secure=IS_PROD,
+    )
     return {"message": "Logged out"}
 
 
