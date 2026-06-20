@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import client from '../api/client'
+import client from '../api/client'
 
+// login function should use:
+const response = await client.post('/api/login', { username, password })
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
