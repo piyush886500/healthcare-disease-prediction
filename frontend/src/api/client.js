@@ -1,27 +1,16 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import axios from 'axios'
 
-const client = {
-  async get(endpoint) {
-    const res = await fetch(`${API_BASE}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-      }
-    })
-    return res.json()
+// Empty string => requests go to the same origin the page was served from.
+// For two separate Render services (frontend + backend), this must be set
+// explicitly via VITE_API_BASE_URL in the frontend's environment variables.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+
+const client = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
   },
-
-  async post(endpoint, data) {
-    const res = await fetch(`${API_BASE}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-      },
-      body: JSON.stringify(data)
-    })
-    return res.json()
-  }
-}
+})
 
 export default client
