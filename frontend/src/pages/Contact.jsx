@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import ChartHeader from '../components/ChartHeader'
+
+const CONTACT_EMAIL = 'piyush886582@gmail.com'
 
 export default function Contact() {
   return (
@@ -15,13 +18,15 @@ export default function Contact() {
 
         <div className="result-section-label">Email</div>
         <p className="result-description" style={{ marginBottom: 16 }}>
-          <a href="mailto:piyush886582@gmail.com">piyush886582@gmail.com</a>
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
         </p>
 
         <div className="result-section-label">Send a message</div>
         <p className="result-description" style={{ marginBottom: 12 }}>
-          This opens your default email app with the message pre-filled — nothing is sent
-          through this site directly.
+          Write your message below. "Open in email app" tries to open your default email
+          app — if nothing happens (common if you don't have one set up), use "Copy
+          message" instead and paste it into Gmail, WhatsApp, or wherever you'd like to
+          send it to {CONTACT_EMAIL}.
         </p>
 
         <ContactForm />
@@ -31,17 +36,41 @@ export default function Contact() {
 }
 
 function ContactForm() {
-  const handleSubmit = (e) => {
+  const [copied, setCopied] = useState(false)
+
+  const buildMessage = (form) => {
+    const name = form.name.value
+    const message = form.message.value
+    return {
+      name,
+      message,
+      fullText: `From: ${name || 'a user'}\n\n${message}`,
+    }
+  }
+
+  const handleOpenEmailApp = (e) => {
     e.preventDefault()
-    const name = e.target.name.value
-    const message = e.target.message.value
+    const { name, message } = buildMessage(e.target)
     const subject = encodeURIComponent(`MediPredict feedback from ${name || 'a user'}`)
     const body = encodeURIComponent(message)
-    window.location.href = `mailto:piyush886582@gmail.com?subject=${subject}&body=${body}`
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`
+  }
+
+  const handleCopy = async (e) => {
+    e.preventDefault()
+    const form = e.target.closest('form')
+    const { fullText } = buildMessage(form)
+    try {
+      await navigator.clipboard.writeText(fullText)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    } catch {
+      alert('Could not copy automatically — please select and copy the text manually.')
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleOpenEmailApp}>
       <div className="field">
         <label htmlFor="name">Your name</label>
         <input id="name" name="name" type="text" />
@@ -64,9 +93,14 @@ function ContactForm() {
           }}
         />
       </div>
-      <button className="btn btn-primary" type="submit" style={{ width: 'auto' }}>
-        Open in email app
-      </button>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <button className="btn btn-primary" type="submit" style={{ width: 'auto' }}>
+          Open in email app
+        </button>
+        <button className="btn btn-ghost" type="button" onClick={handleCopy} style={{ width: 'auto' }}>
+          {copied ? 'Copied ✓' : 'Copy message'}
+        </button>
+      </div>
     </form>
   )
 }
