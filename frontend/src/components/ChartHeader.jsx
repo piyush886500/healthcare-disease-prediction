@@ -1,7 +1,6 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import PulseDivider from './PulseDivider'
-import { NavLink, Link } from 'react-router-dom'
 
 export default function ChartHeader() {
   const { user, logout } = useAuth()
