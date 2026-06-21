@@ -15,7 +15,7 @@ export default function Contact() {
 
         <div className="result-section-label">Email</div>
         <p className="result-description" style={{ marginBottom: 16 }}>
-          <a href="mailto:support@medipredict.app">support@medipredict.app</a>
+          <a href="mailto:piyush886582@gmail.com">support@medipredict.app</a>
         </p>
 
         <div className="result-section-label">Send a message</div>
