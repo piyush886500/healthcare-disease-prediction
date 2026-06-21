@@ -15,7 +15,7 @@ export default function Contact() {
 
         <div className="result-section-label">Email</div>
         <p className="result-description" style={{ marginBottom: 16 }}>
-          <a href="mailto:piyush886582@gmail.com">support@medipredict.app</a>
+          <a href="mailto:piyush886582@gmail.com">piyush886582@gmail.com</a>
         </p>
 
         <div className="result-section-label">Send a message</div>
@@ -37,7 +37,7 @@ function ContactForm() {
     const message = e.target.message.value
     const subject = encodeURIComponent(`MediPredict feedback from ${name || 'a user'}`)
     const body = encodeURIComponent(message)
-    window.location.href = `mailto:support@medipredict.app?subject=${subject}&body=${body}`
+    window.location.href = `mailto:piyush886582@gmail.com?subject=${subject}&body=${body}`
   }
 
   return (
