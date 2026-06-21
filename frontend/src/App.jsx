@@ -7,6 +7,8 @@ import SymptomChecker from './pages/SymptomChecker'
 import History from './pages/History'
 import ModelStats from './pages/ModelStats'
 import NearbyFacilities from './pages/NearbyFacilities'
+import About from './pages/About'
+import Contact from './pages/Contact'
 
 export default function App() {
   return (
@@ -50,6 +52,22 @@ export default function App() {
         element={
           <ProtectedRoute>
             <NearbyFacilities />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/about"
+        element={
+          <ProtectedRoute>
+            <About />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/contact"
+        element={
+          <ProtectedRoute>
+            <Contact />
           </ProtectedRoute>
         }
       />
