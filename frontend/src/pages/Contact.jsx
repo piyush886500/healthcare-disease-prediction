@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import client from '../api/client'
 import ChartHeader from '../components/ChartHeader'
 
 const CONTACT_EMAIL = 'piyush886582@gmail.com'
@@ -12,21 +13,8 @@ export default function Contact() {
         <div className="panel-title">Contact Us</div>
 
         <p className="result-description" style={{ marginBottom: 20 }}>
-          Have a question, found a bug, or want to suggest a feature? Reach out using
-          either option below.
-        </p>
-
-        <div className="result-section-label">Email</div>
-        <p className="result-description" style={{ marginBottom: 16 }}>
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-        </p>
-
-        <div className="result-section-label">Send a message</div>
-        <p className="result-description" style={{ marginBottom: 12 }}>
-          Write your message below. "Open in email app" tries to open your default email
-          app — if nothing happens (common if you don't have one set up), use "Copy
-          message" instead and paste it into Gmail, WhatsApp, or wherever you'd like to
-          send it to {CONTACT_EMAIL}.
+          Have a question, found a bug, or want to suggest a feature? Send a message
+          below and it'll be emailed to {CONTACT_EMAIL} directly from the app.
         </p>
 
         <ContactForm />
@@ -36,52 +24,57 @@ export default function Contact() {
 }
 
 function ContactForm() {
-  const [copied, setCopied] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
+  const [status, setStatus] = useState('idle') // idle | sending | sent | error
+  const [errorMsg, setErrorMsg] = useState('')
 
-  const buildMessage = (form) => {
-    const name = form.name.value
-    const message = form.message.value
-    return {
-      name,
-      message,
-      fullText: `From: ${name || 'a user'}\n\n${message}`,
-    }
-  }
-
-  const handleOpenEmailApp = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const { name, message } = buildMessage(e.target)
-    const subject = encodeURIComponent(`MediPredict feedback from ${name || 'a user'}`)
-    const body = encodeURIComponent(message)
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`
-  }
-
-  const handleCopy = async (e) => {
-    e.preventDefault()
-    const form = e.target.closest('form')
-    const { fullText } = buildMessage(form)
+    setStatus('sending')
+    setErrorMsg('')
     try {
-      await navigator.clipboard.writeText(fullText)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2500)
-    } catch {
-      alert('Could not copy automatically — please select and copy the text manually.')
+      await client.post('/api/contact', { name, email: email || null, message })
+      setStatus('sent')
+      setMessage('')
+    } catch (err) {
+      setStatus('error')
+      setErrorMsg(err.response?.data?.detail || 'Could not send the message, please try again.')
     }
+  }
+
+  if (status === 'sent') {
+    return (
+      <div className="form-error" style={{ background: 'var(--accent-soft)', color: 'var(--accent-ink)', borderColor: 'var(--accent-line)' }}>
+        Message sent — thanks for reaching out!{' '}
+        <span className="header-link" style={{ cursor: 'pointer' }} onClick={() => setStatus('idle')}>
+          Send another
+        </span>
+      </div>
+    )
   }
 
   return (
-    <form onSubmit={handleOpenEmailApp}>
+    <form onSubmit={handleSubmit}>
+      {status === 'error' && <div className="form-error">{errorMsg}</div>}
+
       <div className="field">
         <label htmlFor="name">Your name</label>
-        <input id="name" name="name" type="text" />
+        <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div className="field">
+        <label htmlFor="email">Your email (optional, so we can reply)</label>
+        <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
       <div className="field">
         <label htmlFor="message">Message</label>
         <textarea
           id="message"
-          name="message"
           required
           rows={5}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
           style={{
             width: '100%',
             padding: '11px 13px',
@@ -93,14 +86,9 @@ function ContactForm() {
           }}
         />
       </div>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-        <button className="btn btn-primary" type="submit" style={{ width: 'auto' }}>
-          Open in email app
-        </button>
-        <button className="btn btn-ghost" type="button" onClick={handleCopy} style={{ width: 'auto' }}>
-          {copied ? 'Copied ✓' : 'Copy message'}
-        </button>
-      </div>
+      <button className="btn btn-primary" type="submit" disabled={status === 'sending'} style={{ width: 'auto' }}>
+        {status === 'sending' ? 'Sending…' : 'Send message'}
+      </button>
     </form>
   )
 }

@@ -25,7 +25,10 @@ This is a 1:1 functional port of the original Flask `app.py`:
 """
 import json
 import os
+import smtplib
+from email.mime.text import MIMEText
 from typing import List
+from pydantic import BaseModel
 
 from fastapi import FastAPI, HTTPException, Response, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,6 +37,7 @@ from fastapi.staticfiles import StaticFiles
 import ml
 from clinics import geocode_pincode, find_nearby_facilities
 from db import get_db_connection, init_db
+
 from auth import (
     create_session_token,
     get_current_user,
@@ -49,10 +53,17 @@ from schemas import (
     ModelStatsResponse,
     HistoryItem,
     MeResponse,
+    ContactRequest,
 )
 
 app = FastAPI(title="MediPredict API")
 IS_PROD = os.environ.get("RENDER") is not None
+
+# Server-side email sending for the Contact page, via Gmail SMTP.
+# Set these as environment variables on Render — never hardcode them.
+SMTP_EMAIL = os.environ.get("SMTP_EMAIL")
+SMTP_APP_PASSWORD = os.environ.get("SMTP_APP_PASSWORD")
+CONTACT_RECEIVER_EMAIL = os.environ.get("CONTACT_RECEIVER_EMAIL", SMTP_EMAIL)
 
 # Allow the React dev server (Vite defaults to 5173) and a same-machine
 # build preview to call the API with cookies attached.
@@ -188,6 +199,34 @@ def nearby_facilities(pincode: str, radius_km: float = 5):
         raise HTTPException(status_code=502, detail="Facility lookup failed, please try again")
 
     return {"pincode": pincode, "lat": lat, "lon": lon, "facilities": facilities}
+
+@app.post("/api/contact")
+def send_contact_message(payload: ContactRequest):
+    if not SMTP_EMAIL or not SMTP_APP_PASSWORD or not CONTACT_RECEIVER_EMAIL:
+        raise HTTPException(
+            status_code=500,
+            detail="Email sending isn't configured on the server yet.",
+        )
+
+    sender_label = payload.name.strip() or "Anonymous"
+    body = f"From: {sender_label} ({payload.email or 'no email provided'})\n\n{payload.message}"
+
+    msg = MIMEText(body)
+    msg["Subject"] = f"MediPredict contact form — {sender_label}"
+    msg["From"] = SMTP_EMAIL
+    msg["To"] = CONTACT_RECEIVER_EMAIL
+    if payload.email:
+        msg["Reply-To"] = payload.email
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(SMTP_EMAIL, SMTP_APP_PASSWORD)
+            server.sendmail(SMTP_EMAIL, [CONTACT_RECEIVER_EMAIL], msg.as_string())
+    except Exception:
+        raise HTTPException(status_code=502, detail="Could not send the message, please try again later.")
+
+    return {"status": "sent"}
 
 
 # --------------------------------------------------------------------------

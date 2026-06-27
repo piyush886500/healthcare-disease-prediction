@@ -52,3 +52,8 @@ class HistoryItem(BaseModel):
 class MeResponse(BaseModel):
     user_id: int
     username: str
+
+class ContactRequest(BaseModel):
+    name: str = ""
+    email: Optional[EmailStr] = None
+    message: str = Field(min_length=1)
