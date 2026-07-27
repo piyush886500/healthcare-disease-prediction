@@ -1,57 +1,63 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import client from '../api/client'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user,    setUser]    = useState(null)
-  const [loading, setLoading] = useState(true)  // ← TRUE until we've checked storage
+  const [loading, setLoading] = useState(true)
 
-  // ── On every page load/refresh — restore session from localStorage ─────────
+  // ── On every page load — verify session cookie with backend ───────────────
+  // Your backend uses httponly cookies (not JWT in localStorage).
+  // The ONLY way to know if the user is still logged in after a reload
+  // is to ask the backend via GET /api/me — the cookie goes automatically.
   useEffect(() => {
-    const stored = localStorage.getItem('medipredict_user')
-    const token  = localStorage.getItem('medipredict_token')
-
-    if (stored && token) {
+    const restoreSession = async () => {
       try {
-        setUser(JSON.parse(stored))  // restore user object silently
+        const res = await client.get('/api/me')
+        // Cookie is valid — restore user
+        setUser(res.data)
+        // Keep localStorage in sync so we have a username to display
+        localStorage.setItem('medipredict_user', JSON.stringify(res.data))
       } catch {
-        // Corrupt data — clear it
+        // Cookie missing or expired — clear everything
         localStorage.removeItem('medipredict_user')
-        localStorage.removeItem('medipredict_token')
+        setUser(null)
+      } finally {
+        setLoading(false)
       }
     }
-
-    // Done checking — now ProtectedRoute can decide
-    setLoading(false)
+    restoreSession()
   }, [])
 
   // ── Login ──────────────────────────────────────────────────────────────────
-  const login = async (email, password) => {
-    const res = await client.post('/api/login', { email, password })
+  const login = useCallback(async (email, password) => {
+    const res  = await client.post('/api/login', { email, password })
     const data = res.data
-
-    // Persist so reload doesn't log user out
-    localStorage.setItem('medipredict_user',  JSON.stringify(data))
-    localStorage.setItem('medipredict_token', data.access_token || data.token || 'session')
-
-    setUser(data)
-    return data
-  }
+    // Backend sets httponly session cookie automatically in the response.
+    // We just store the user object for the UI.
+    const userObj = {
+      user_id:  data.user_id,
+      username: data.username,
+      email,
+    }
+    localStorage.setItem('medipredict_user', JSON.stringify(userObj))
+    setUser(userObj)
+    return userObj
+  }, [])
 
   // ── Register ───────────────────────────────────────────────────────────────
-  const register = async (username, email, password) => {
+  const register = useCallback(async (username, email, password) => {
     const res = await client.post('/api/register', { username, email, password })
     return res.data
-  }
+  }, [])
 
   // ── Logout ─────────────────────────────────────────────────────────────────
-  const logout = async () => {
-    try { await client.post('/api/logout') } catch {}  // best-effort
+  const logout = useCallback(async () => {
+    try { await client.post('/api/logout') } catch {}
     localStorage.removeItem('medipredict_user')
-    localStorage.removeItem('medipredict_token')
     setUser(null)
-  }
+  }, [])
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout }}>
